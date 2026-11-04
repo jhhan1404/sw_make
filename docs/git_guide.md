@@ -25,7 +25,7 @@ pytest                           # "29 passed" 가 나오면 성공
 
 ```
 main      ← 제출·발표용. 직접 push 금지
-develop   ← 통합 브랜치. 직접 push 금지, PR로만 병합
+develop   ← 통합 브랜치. 직접 push 금지, PR로 병합 (승인 없이 본인 Merge 가능)
 feature/… ← 각자 작업 브랜치
 ```
 
@@ -66,8 +66,10 @@ git push -u origin feature/F-02-reservation
 1. GitHub 레포 화면에 뜨는 **Compare & pull request**를 누른다.
 2. **base: `develop`** ← compare: 내 브랜치. (base가 `main`이 아닌지 꼭 확인)
 3. 제목: `F-02 예약 취소 기능`, 본문: 무엇을 했는지, 테스트 결과, 관련 기능 ID.
-4. Reviewers에 팀원 1명을 지정한다.
-5. 리뷰어가 **Approve**하면 작성자가 **Merge**한다.
+4. (선택) 리뷰를 받고 싶으면 Reviewers에 팀원을 지정한다. 승인은 필수가 아니다.
+5. **Merge pull request** → **Confirm merge**를 눌러 본인이 병합한다.
+6. 다른 사람 담당 파일이나 공통 파일(`app/models/`, `app/db/`, `CLAUDE.md`, `requirements.txt`)을 고쳤다면, Merge 전에 단톡방에 알리고 담당자 확인을 받는다.
+7. Merge 후 GitHub에 뜨는 **Delete branch**를 눌러 다 쓴 브랜치를 정리한다.
 
 ## 5. 커밋 메시지 규칙
 
