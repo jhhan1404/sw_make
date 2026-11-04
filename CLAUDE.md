@@ -42,6 +42,7 @@
 ## Git
 
 - 브랜치: `feature/<기능ID>-<설명>`, 커밋: `feat:`, `fix:`, `test:`, `docs:`, `refactor:`.
+- develop·main에는 PR로만 병합한다. 승인은 필요 없지만 `pytest` 통과 후 Merge한다.
 - `.env`, `*.db` 파일은 커밋하지 않는다.
 
 ## AI 도구 사용
