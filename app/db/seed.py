@@ -1,3 +1,4 @@
+# AI-assisted (Claude) — 정회성 검토 완료
 """가상 데이터 적재 스크립트. `app/db/seed_data/*.json`을 읽어 DB에 넣는다.
 
 실행:
