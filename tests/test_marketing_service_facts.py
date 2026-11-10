@@ -79,3 +79,4 @@ def test_marketing_service_detects_unregistered_menu():
     )
 
     assert any("Unregistered menu name" in violation for violation in result.violations)
+
