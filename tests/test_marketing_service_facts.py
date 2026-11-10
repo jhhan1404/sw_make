@@ -47,9 +47,7 @@ def test_marketing_service_checks_price_and_time():
 def test_marketing_service_accepts_registered_price_and_time():
     response = "아메리카노는 4500원입니다. 영업시간은 09:00부터 18:00까지입니다."
 
-    service = MarketingService(
-        MockAIClient(fixed_response=response)
-    )
+    service = MarketingService(MockAIClient(fixed_response=response))
 
     result = service.generate(
         channel="sms",
@@ -66,9 +64,7 @@ def test_marketing_service_accepts_registered_price_and_time():
 def test_marketing_service_detects_unregistered_menu():
     response = "바닐라라떼는 5000원입니다."
 
-    service = MarketingService(
-        MockAIClient(fixed_response=response)
-    )
+    service = MarketingService(MockAIClient(fixed_response=response))
 
     result = service.generate(
         channel="sms",
@@ -79,4 +75,3 @@ def test_marketing_service_detects_unregistered_menu():
     )
 
     assert any("Unregistered menu name" in violation for violation in result.violations)
-
