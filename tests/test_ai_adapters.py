@@ -112,3 +112,13 @@ def test_factory_selects_provider():
     assert isinstance(get_ai_client("openai", "k", "m"), OpenAIClient)
     with pytest.raises(AIClientError, match="알 수 없는"):
         get_ai_client("unknown")
+
+
+def test_check_command(monkeypatch, capsys):
+    from app.adapters.ai import check
+
+    monkeypatch.setattr(check, "get_ai_client", lambda: MockAIClient(fixed_response="안녕하세요"))
+    assert check.main() == 0 and "성공: 안녕하세요" in capsys.readouterr().out
+
+    monkeypatch.setattr(check, "get_ai_client", lambda: MockAIClient(fail=True))
+    assert check.main() == 1 and "실패" in capsys.readouterr().out
