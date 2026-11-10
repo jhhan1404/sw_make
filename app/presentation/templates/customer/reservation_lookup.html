@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}내 예약 조회{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">내 예약 조회</h1>
+
+{% if message %}<div class="alert alert-success">{{ message }}</div>{% endif %}
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+<form method="post" action="/reservations/lookup" class="card card-body mb-4">
+  <label for="phone" class="form-label">예약할 때 입력한 연락처</label>
+  <div class="d-flex gap-2">
+    <input id="phone" name="phone" class="form-control" placeholder="010-1234-5678" value="{{ phone or '' }}" required>
+    <button class="btn btn-primary text-nowrap">조회</button>
+  </div>
+</form>
+
+{% if phone is not none %}
+  {% if not reservations %}
+  <div class="alert alert-secondary">이 연락처로 된 예약이 없습니다.</div>
+  {% else %}
+  <div class="table-responsive">
+  <table class="table align-middle bg-white">
+    <thead><tr><th>번호</th><th>매장</th><th>일시</th><th>인원</th><th>상태</th><th></th></tr></thead>
+    <tbody>
+    {% for r in reservations %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td class="text-nowrap">{{ r.store.name }}</td>
+      <td class="text-nowrap">{{ r.reserved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>{{ r.party_size }}명</td>
+      <td><span class="badge {{ badges[r.status] }}">{{ r.status }}</span></td>
+      <td class="text-nowrap">
+        {% if 'change' in actions[r.id] %}
+        <form method="post" action="/reservations/{{ r.id }}/edit" class="d-inline">
+          <input type="hidden" name="phone" value="{{ phone }}">
+          <button class="btn btn-sm btn-outline-primary">변경</button>
+        </form>
+        {% endif %}
+        {% if 'cancel' in actions[r.id] %}
+        <form method="post" action="/reservations/{{ r.id }}/cancel" class="d-inline" onsubmit="return confirm('예약을 취소할까요?')">
+          <input type="hidden" name="phone" value="{{ phone }}">
+          <button class="btn btn-sm btn-outline-danger">취소</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="text-muted small">'요청'·'확정' 상태인 예약만 변경·취소할 수 있습니다.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

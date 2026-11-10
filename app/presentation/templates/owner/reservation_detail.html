@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}예약 #{{ reservation.id }}{% endblock %}
+{% block content %}
+<a href="/owner/reservations?store_id={{ reservation.store_id }}" class="btn btn-link px-0 mb-2">← 예약 목록</a>
+<h1 class="h4 mb-3">예약 #{{ reservation.id }}
+  <span class="badge {{ badges[reservation.status] }} align-middle">{{ reservation.status }}</span></h1>
+
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+<div class="card card-body mb-3">
+  <dl class="row mb-0">
+    <dt class="col-sm-3">매장</dt><dd class="col-sm-9">{{ reservation.store.name }}</dd>
+    <dt class="col-sm-3">일시</dt><dd class="col-sm-9">{{ reservation.reserved_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+    <dt class="col-sm-3">고객</dt>
+    <dd class="col-sm-9"><a href="/owner/customers?phone={{ reservation.customer.phone }}">{{ reservation.customer.name }}</a> ({{ reservation.customer.phone }})</dd>
+    <dt class="col-sm-3">인원</dt><dd class="col-sm-9">{{ reservation.party_size }}명</dd>
+    <dt class="col-sm-3">요청 사항</dt><dd class="col-sm-9">{{ reservation.request or '-' }}</dd>
+  </dl>
+</div>
+
+<div class="mb-4">
+  {% if owner_actions %}
+  <div class="d-flex gap-2">
+    {% for a in owner_actions %}
+    <form method="post" action="/owner/reservations/{{ reservation.id }}/{{ a }}">
+      <button class="btn {{ 'btn-outline-danger' if a in ('cancel', 'no_show') else 'btn-primary' }}">{{ labels[a] }}</button>
+    </form>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">'{{ reservation.status }}' 상태는 더 처리할 수 없습니다.</p>
+  {% endif %}
+</div>
+
+<h2 class="h6">상태 변경 이력</h2>
+<table class="table table-sm bg-white">
+  <thead><tr><th>시각</th><th>이전</th><th>이후</th></tr></thead>
+  <tbody>
+  {% for h in reservation.histories %}
+  <tr><td>{{ h.changed_at.strftime('%Y-%m-%d %H:%M:%S') }}</td><td>{{ h.from_status }}</td><td>{{ h.to_status }}</td></tr>
+  {% else %}
+  <tr><td colspan="3" class="text-muted">이력이 없습니다.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}예약 신청 완료{% endblock %}
+{% block content %}
+<div class="card card-body">
+  <h1 class="h4">예약을 신청했습니다</h1>
+  <p class="mb-1">예약 번호: <strong>{{ reservation.id }}</strong></p>
+  <p class="mb-1">{{ reservation.store.name }} · {{ reservation.reserved_at.strftime('%Y-%m-%d %H:%M') }} · {{ reservation.party_size }}명</p>
+  <p class="mb-3">상태: <span class="badge {{ badges[reservation.status] }}">{{ reservation.status }}</span>
+    <small class="text-muted">매장에서 확정하면 '확정'으로 바뀝니다.</small></p>
+  <div class="d-flex gap-2">
+    <a href="/reservations/lookup" class="btn btn-outline-primary">내 예약 조회</a>
+    <a href="/" class="btn btn-outline-secondary">처음으로</a>
+  </div>
+</div>
+{% endblock %}
