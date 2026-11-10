@@ -135,14 +135,14 @@ class GeminiAIClient(HttpAIClient):
 
     def endpoint(self) -> str:
         base = "https://generativelanguage.googleapis.com/v1beta/models"
-        return f"{base}/{self._model_id()}:generateContent?key={self.api_key}"
+        return f"{base}/{self._model_id()}:generateContent"
 
     def _model_id(self) -> str:
         """AI Studio 예제 코드의 'models/gemini-...' 형식도 그대로 받는다."""
         return self.model.removeprefix("models/")
 
     def headers(self) -> dict[str, str]:
-        return {}
+        return {"x-goog-api-key": self.api_key}
 
     def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
         body: dict[str, Any] = {
