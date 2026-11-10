@@ -113,4 +113,3 @@ class MarketingService:
             store_id=store_id,
             limit=limit,
         )
-
