@@ -30,7 +30,7 @@
 | TC-01-04 | F-01-2 | 예외 | 가격 -1000 또는 문자 입력 | 저장 거부, 오류 메시지 | | ⬜ |
 | TC-01-05 | F-01-3 | 정상 | FAQ 질문·답변 등록 | FAQ 목록에 추가 | | ⬜ |
 
-## F-02 예약 관리 (한재형)
+## F-02 예약·고객 관리 (정회성, WBS v2)
 
 | TC ID | 기능 ID | 구분 | 입력·조건 | 기대 결과 | 자동화 | 결과 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -39,12 +39,22 @@
 | TC-02-03 | F-02-4 | 예외 | "요청"에서 방문 처리, "취소"에서 확정 등 | `InvalidTransitionError` | `tests/test_reservation_states.py::test_denied_transitions` | ✅ |
 | TC-02-04 | F-02-4 | 예외 | 종료 상태(방문완료·취소·노쇼)의 버튼 목록 | 빈 목록 (버튼 없음) | `tests/test_reservation_states.py::test_terminal_states_have_no_actions` | ✅ |
 | TC-02-05 | F-02-4 | 예외 | DB에 없는 상태 문자열 "보류" | `ValueError` | `tests/test_reservation_states.py::test_unknown_status` | ✅ |
-| TC-02-06 | F-02-1 | 정상 | 영업일 영업시간 안, 정원 이내로 예약 신청 | "요청" 상태로 저장, 예약 번호 표시 | | ⬜ |
-| TC-02-07 | F-02-2 | 예외 | 휴무일(월) 예약 신청 | 거부, 사유 표시 | | ⬜ |
-| TC-02-08 | F-02-2 | 예외 | 영업시간 밖(22:00) 예약 신청 | 거부, 사유 표시 | | ⬜ |
-| TC-02-09 | F-02-2 | 예외 | 시간당 정원 초과 | 거부, 다른 시간대 안내 | | ⬜ |
-| TC-02-10 | F-02-3 | 예외 | 없는 연락처로 조회 | "예약을 찾을 수 없습니다" | | ⬜ |
-| TC-02-11 | F-02-5 | 정상 | 상태 변경 | 이전·이후 상태가 이력에 기록 | | ⬜ |
+| TC-02-06 | F-02-1 | 정상 | 영업일 영업시간 안, 정원 이내로 예약 신청 | "요청" 상태로 저장, 예약 번호 표시 | `tests/test_reservation_flow.py::test_create_starts_as_requested_with_history`, `::test_submit_and_lookup` | ✅ |
+| TC-02-07 | F-02-2 | 예외 | 휴무일(월) 예약 신청 | 거부, "월요일은 휴무일입니다." | `tests/test_reservation_flow.py::test_create_rejected_by_store_rules`, `::test_submit_rejected_shows_reason` | ✅ |
+| TC-02-08 | F-02-2 | 예외 | 영업시간 밖(08:30) 또는 마감 시각 정각(21:00) 신청 | 거부, 영업시간 안내 | `tests/test_reservation_flow.py::test_create_rejected_by_store_rules` | ✅ |
+| TC-02-09 | F-02-2 | 예외 | 시간당 정원 초과 (같은 시간 대 '요청'·'확정' 인원 합) | 거부, 남은 인원과 다른 시간대 안내 | `tests/test_reservation_flow.py::test_create_rejected_by_store_rules`, `::test_capacity_counts_same_hour_only_active` | ✅ |
+| TC-02-10 | F-02-3 | 예외 | 예약이 없는 연락처로 조회 | "이 연락처로 된 예약이 없습니다." | `tests/test_reservation_flow.py::test_lookup_unknown_phone_shows_empty_message` | ✅ |
+| TC-02-11 | F-02-5 | 정상 | 신청 → 확정 → 방문완료 | 신규→요청, 요청→확정, 확정→방문완료 이력이 시각과 함께 기록 | `tests/test_reservation_flow.py::test_owner_flow_records_every_change` | ✅ |
+| TC-02-12 | F-02-2 | 예외 | 지난 시간으로 신청 | 거부, "지난 시간은 예약할 수 없습니다." | `tests/test_reservation_flow.py::test_create_rejected_by_store_rules` | ✅ |
+| TC-02-13 | F-02-2 | 정상 | 정원이 찬 시간대의 예약이 취소됨 | 그 시간대에 다시 예약 가능 | `tests/test_reservation_flow.py::test_cancelled_reservation_frees_capacity` | ✅ |
+| TC-02-14 | F-02-3 | 정상 | "확정" 예약을 고객이 날짜·인원 변경 | 변경 저장, 상태는 "요청"(점주 재확정 필요) | `tests/test_reservation_flow.py::test_change_confirmed_goes_back_to_requested`, `::test_customer_change_and_cancel` | ✅ |
+| TC-02-15 | F-02-3 | 예외 | 변경하려는 시간이 휴무일 | 거부, 기존 예약 그대로 유지 | `tests/test_reservation_flow.py::test_change_rejected_slot_keeps_original` | ✅ |
+| TC-02-16 | F-02-3 | 예외 | 다른 사람 연락처로 변경·취소 | "예약을 찾을 수 없습니다" (남의 예약 존재 여부 숨김) | `tests/test_reservation_flow.py::test_change_or_cancel_with_other_phone_is_not_found`, `::test_customer_other_phone_cannot_edit` | ✅ |
+| TC-02-17 | F-02-3 | 예외 | 방문완료·노쇼·취소 상태에서 변경·취소 | `InvalidTransitionError` | `tests/test_reservation_flow.py::test_cannot_change_or_cancel_after_final_state` | ✅ |
+| TC-02-18 | F-02-4 | 예외 | 점주가 "요청" 예약을 방문 처리 | 거부, 상태·이력 그대로, 화면에 사유 표시 | `tests/test_reservation_flow.py::test_owner_invalid_transition_keeps_state_and_history`, `::test_owner_process_and_invalid_transition` | ✅ |
+| TC-02-19 | F-02-4 | 예외 | 점주가 '변경' 동작 요청 | 거부 (변경은 고객만) | `tests/test_reservation_flow.py::test_owner_cannot_use_change_action` | ✅ |
+| TC-02-20 | F-02-1 | 예외 | 이름 누락, 연락처 형식 오류, 인원 0명·21명, 날짜 누락 | 거부, 한국어 오류 메시지 | `tests/test_reservation_flow.py::test_invalid_input_has_korean_message` | ✅ |
+| TC-02-21 | UC-10 | 정상 | 점주가 전화번호로 고객 검색 | 방문 횟수·노쇼 횟수·예약 이력 표시 | `tests/test_reservation_flow.py::test_customer_history_counts_visits` | ✅ |
 
 ## F-03 문의 접수·AI 답변 초안 (정회성)
 
