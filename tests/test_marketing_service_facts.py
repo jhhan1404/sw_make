@@ -29,9 +29,7 @@ def create_menu() -> MenuItem:
 def test_marketing_service_checks_price_and_time():
     response = "아메리카노는 5000원입니다. 영업시간은 09:00부터 21:00까지입니다."
 
-    service = MarketingService(
-        MockAIClient(fixed_response=response)
-    )
+    service = MarketingService(MockAIClient(fixed_response=response))
 
     result = service.generate(
         channel="sms",
@@ -80,7 +78,4 @@ def test_marketing_service_detects_unregistered_menu():
         menus=[create_menu()],
     )
 
-    assert any(
-        "Unregistered menu name" in violation
-        for violation in result.violations
-    )
+    assert any("Unregistered menu name" in violation for violation in result.violations)
