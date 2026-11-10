@@ -1,18 +1,150 @@
+# AI-assisted (Claude) — 정회성 검토 완료
 """실제 생성형 AI API Adapter (Adapter 패턴의 Adapter).
 
-TODO(정회성): 팀이 사용할 AI API가 정해지면 해당 SDK 또는 HTTP 호출로 구현한다.
-- API 키는 app.config.AI_API_KEY 에서 읽는다 (.env).
-- 어떤 오류든 AIClientError 로 감싸서 던진다.
+세 API는 요청·응답 JSON 모양만 다르고 "보내고 → 받고 → 텍스트 꺼내기" 흐름은 같다.
+공통 흐름은 HttpAIClient.generate()에 두고, API별 차이(주소·헤더·본문·응답 해석)만
+하위 클래스가 구현한다. 서비스 계층은 AIClient.generate()만 알면 된다. (NF-03)
+
+어떤 실패든 AIClientError로 바꿔서 던진다. API 키는 오류 메시지에 절대 넣지 않는다.
 """
+
+from abc import abstractmethod
+from typing import Any
+
+import httpx
 
 from app.adapters.ai.base import AIClient, AIClientError
 
+MAX_OUTPUT_TOKENS = 1024
 
-class ExternalAIClient(AIClient):
-    def __init__(self, api_key: str) -> None:
-        if not api_key:
-            raise AIClientError("AI_API_KEY가 설정되지 않았습니다 (.env 확인)")
+
+class HttpAIClient(AIClient):
+    """HTTP로 호출하는 AI API의 공통 흐름."""
+
+    provider_name: str = ""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        timeout: float = 30.0,
+        transport: httpx.BaseTransport | None = None,
+    ) -> None:
         self.api_key = api_key
+        self.model = model
+        self.timeout = timeout
+        self.transport = transport  # 테스트에서 가짜 응답을 넣을 때만 사용
 
     def generate(self, prompt: str, system: str | None = None) -> str:
-        raise AIClientError("ExternalAIClient가 아직 구현되지 않았습니다")
+        self._check_config()
+        response = self._post(self.payload(prompt, system))
+        return self._extract_text(response)
+
+    def _check_config(self) -> None:
+        if not self.api_key:
+            raise AIClientError("AI_API_KEY가 설정되지 않았습니다 (.env 확인)")
+        if not self.model:
+            raise AIClientError("AI_MODEL이 설정되지 않았습니다 (.env 확인)")
+
+    def _post(self, body: dict[str, Any]) -> httpx.Response:
+        try:
+            with httpx.Client(timeout=self.timeout, transport=self.transport) as client:
+                return client.post(self.endpoint(), headers=self.headers(), json=body)
+        except httpx.TimeoutException as e:
+            raise AIClientError(f"{self.provider_name} 응답 시간 초과") from e
+        except httpx.HTTPError as e:
+            raise AIClientError(f"{self.provider_name} 연결 실패: {type(e).__name__}") from e
+
+    def _extract_text(self, response: httpx.Response) -> str:
+        if response.status_code != 200:
+            raise AIClientError(f"{self.provider_name} 오류 (HTTP {response.status_code})")
+        try:
+            text = self.parse(response.json())
+        except (KeyError, IndexError, TypeError, ValueError) as e:
+            raise AIClientError(f"{self.provider_name} 응답 형식을 해석할 수 없습니다") from e
+        if not text or not text.strip():
+            raise AIClientError(f"{self.provider_name} 응답이 비어 있습니다")
+        return text.strip()
+
+    @abstractmethod
+    def endpoint(self) -> str: ...
+
+    @abstractmethod
+    def headers(self) -> dict[str, str]: ...
+
+    @abstractmethod
+    def payload(self, prompt: str, system: str | None) -> dict[str, Any]: ...
+
+    @abstractmethod
+    def parse(self, data: dict[str, Any]) -> str: ...
+
+
+class ClaudeAIClient(HttpAIClient):
+    """Anthropic Messages API."""
+
+    provider_name = "Claude"
+
+    def endpoint(self) -> str:
+        return "https://api.anthropic.com/v1/messages"
+
+    def headers(self) -> dict[str, str]:
+        return {"x-api-key": self.api_key, "anthropic-version": "2023-06-01"}
+
+    def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": MAX_OUTPUT_TOKENS,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        if system:
+            body["system"] = system
+        return body
+
+    def parse(self, data: dict[str, Any]) -> str:
+        return "".join(b["text"] for b in data["content"] if b.get("type") == "text")
+
+
+class GeminiAIClient(HttpAIClient):
+    """Google Gemini API (generateContent)."""
+
+    provider_name = "Gemini"
+
+    def endpoint(self) -> str:
+        base = "https://generativelanguage.googleapis.com/v1beta/models"
+        return f"{base}/{self.model}:generateContent"
+
+    def headers(self) -> dict[str, str]:
+        return {"x-goog-api-key": self.api_key}
+
+    def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
+        body: dict[str, Any] = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"maxOutputTokens": MAX_OUTPUT_TOKENS},
+        }
+        if system:
+            body["systemInstruction"] = {"parts": [{"text": system}]}
+        return body
+
+    def parse(self, data: dict[str, Any]) -> str:
+        parts = data["candidates"][0]["content"]["parts"]
+        return "".join(p.get("text", "") for p in parts)
+
+
+class OpenAIClient(HttpAIClient):
+    """OpenAI Chat Completions API."""
+
+    provider_name = "OpenAI"
+
+    def endpoint(self) -> str:
+        return "https://api.openai.com/v1/chat/completions"
+
+    def headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.api_key}"}
+
+    def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
+        messages = [{"role": "system", "content": system}] if system else []
+        messages.append({"role": "user", "content": prompt})
+        return {"model": self.model, "messages": messages}
+
+    def parse(self, data: dict[str, Any]) -> str:
+        return data["choices"][0]["message"]["content"]
