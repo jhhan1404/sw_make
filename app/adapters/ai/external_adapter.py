@@ -135,14 +135,14 @@ class GeminiAIClient(HttpAIClient):
 
     def endpoint(self) -> str:
         base = "https://generativelanguage.googleapis.com/v1beta/models"
-        return f"{base}/{self._model_id()}:generateContent"
+        return f"{base}/{self._model_id()}:generateContent?key={self.api_key}"
 
     def _model_id(self) -> str:
         """AI Studio 예제 코드의 'models/gemini-...' 형식도 그대로 받는다."""
         return self.model.removeprefix("models/")
 
     def headers(self) -> dict[str, str]:
-        return {"x-goog-api-key": self.api_key}
+        return {}
 
     def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
         body: dict[str, Any] = {
@@ -171,6 +171,26 @@ class OpenAIClient(HttpAIClient):
 
     def endpoint(self) -> str:
         return "https://api.openai.com/v1/chat/completions"
+
+    def headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.api_key}"}
+
+    def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
+        messages = [{"role": "system", "content": system}] if system else []
+        messages.append({"role": "user", "content": prompt})
+        return {"model": self.model, "messages": messages}
+
+    def parse(self, data: dict[str, Any]) -> str:
+        return data["choices"][0]["message"]["content"]
+
+
+class GroqAIClient(HttpAIClient):
+    """Groq Cloud API (OpenAI-compatible)."""
+
+    provider_name = "Groq"
+
+    def endpoint(self) -> str:
+        return "https://api.groq.com/openai/v1/chat/completions"
 
     def headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.api_key}"}

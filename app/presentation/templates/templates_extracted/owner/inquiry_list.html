@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}문의함{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">문의함</h1>
+  {% if stores %}
+  <form method="get" class="d-flex gap-2">
+    <select name="store_id" class="form-select form-select-sm" onchange="this.form.submit()">
+      {% for s in stores %}
+      <option value="{{ s.id }}" {% if selected and s.id == selected.id %}selected{% endif %}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+  {% endif %}
+</div>
+
+{% if not inquiries %}
+<div class="alert alert-secondary">아직 들어온 문의가 없습니다.</div>
+{% else %}
+<div class="table-responsive">
+<table class="table table-hover align-middle bg-white">
+  <thead><tr><th>상태</th><th>접수</th><th>고객</th><th>내용</th><th>AI 초안</th></tr></thead>
+  <tbody>
+  {% for q in inquiries %}
+  <tr>
+    <td><span class="badge {{ 'text-bg-warning' if q.status == '미응답' else 'text-bg-success' }}">{{ q.status }}</span></td>
+    <td class="text-nowrap">{{ q.received_at.strftime('%m/%d %H:%M') }}</td>
+    <td class="text-nowrap">{{ q.customer.name }}</td>
+    <td><a href="/owner/inquiries/{{ q.id }}">{{ q.content[:40] }}{% if q.content|length > 40 %}…{% endif %}</a></td>
+    <td>{{ '있음' if q.ai_draft else '-' }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}

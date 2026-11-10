@@ -90,6 +90,10 @@ class VisitedState(ReservationState):
 class CancelledState(ReservationState):
     status = ReservationStatus.CANCELLED
 
+    def confirm(self) -> ReservationState:
+        """취소된 예약을 점주가 복원 (요청 상태로 되돌림)."""
+        return RequestedState()
+
 
 class NoShowState(ReservationState):
     status = ReservationStatus.NO_SHOW
