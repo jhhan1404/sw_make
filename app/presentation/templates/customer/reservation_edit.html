@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}예약 변경{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">예약 변경 <small class="text-muted">#{{ reservation.id }} {{ reservation.store.name }}</small></h1>
+
+{% if errors %}
+<div class="alert alert-danger" role="alert">
+  <ul class="mb-0">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/reservations/{{ reservation.id }}/change" class="card card-body">
+  <input type="hidden" name="phone" value="{{ phone }}">
+  <div class="row g-3 mb-3">
+    <div class="col-md-4">
+      <label for="visit_date" class="form-label">방문 날짜</label>
+      <input id="visit_date" name="visit_date" type="date" class="form-control" value="{{ form.visit_date }}" required>
+    </div>
+    <div class="col-md-4">
+      <label for="visit_time" class="form-label">방문 시간</label>
+      <input id="visit_time" name="visit_time" type="time" step="1800" class="form-control" value="{{ form.visit_time }}" required>
+    </div>
+    <div class="col-md-4">
+      <label for="party_size" class="form-label">인원</label>
+      <input id="party_size" name="party_size" type="number" min="1" max="{{ max_party }}" class="form-control" value="{{ form.party_size }}" required>
+    </div>
+  </div>
+  {% if reservation.status == '확정' %}
+  <p class="text-muted small">확정된 예약을 바꾸면 다시 '요청' 상태가 되고, 매장에서 다시 확정합니다.</p>
+  {% endif %}
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary">변경 저장</button>
+  </div>
+</form>
+<form method="post" action="/reservations/lookup" class="mt-2">
+  <input type="hidden" name="phone" value="{{ phone }}">
+  <button class="btn btn-link px-0">← 내 예약으로 돌아가기</button>
+</form>
+{% endblock %}
