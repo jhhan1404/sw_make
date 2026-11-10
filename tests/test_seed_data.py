@@ -1,3 +1,4 @@
+# AI-assisted (Claude) — 정회성 검토 완료
 """가상 데이터 품질 검사 (11주차). 13주차 AI 검증 실험의 전제가 깨지지 않았는지 확인한다."""
 
 from collections import Counter

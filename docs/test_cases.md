@@ -57,9 +57,26 @@
 | TC-03-05 | F-03-3 | 정상 | 한 자리 시각 표기(9:00) | 09:00으로 인식해 통과 | `tests/test_fact_checker.py::test_single_digit_hour_normalized` | ✅ |
 | TC-03-06 | F-03-3 | 예외 | AI가 틀린 가격(3,000원)으로 답함 | 초안과 함께 경고 반환 | `tests/test_inquiry_service.py::test_draft_with_wrong_price_warns` | ✅ |
 | TC-03-07 | F-03-5 | 예외 | AI 호출 실패 | 초안 없음 + 오류 안내 | `tests/test_inquiry_service.py::test_ai_failure_returns_error` | ✅ |
-| TC-03-08 | F-03-1 | 정상 | 고객이 이름·연락처·내용으로 문의 등록 | "미응답"으로 저장 | | ⬜ |
-| TC-03-09 | F-03-1 | 예외 | 내용이 비었거나 1,000자 초과 | 등록 거부 | | ⬜ |
+| TC-03-08 | F-03-1 | 정상 | 고객이 이름·연락처·내용으로 문의 등록 | "미응답"으로 저장 | `tests/test_inquiry_flow.py::test_register_creates_unanswered_inquiry`, `::test_customer_submit_success` | ✅ |
+| TC-03-09 | F-03-1 | 예외 | 내용이 비었거나 1,000자 초과, 연락처 형식 오류, 이름 누락 | 등록 거부, 한국어 오류 메시지, 입력값 유지 | `tests/test_inquiry_flow.py::test_invalid_input_has_korean_message`, `::test_customer_submit_invalid_shows_errors_and_keeps_input` | ✅ |
 | TC-03-10 | F-03-4 | 정상 | 초안 수정 후 발송 완료 | 상태 "답변완료", AI 원본과 최종 답변 모두 저장 | | ⬜ |
+| TC-03-11 | F-03-1 | 정상 | 같은 연락처로 두 번 문의 | 같은 고객으로 묶임 | `tests/test_inquiry_flow.py::test_register_reuses_customer_by_phone` | ✅ |
+| TC-03-12 | F-03-1 | 예외 | 없는 매장 id로 문의 | `StoreNotFoundError` | `tests/test_inquiry_flow.py::test_register_unknown_store` | ✅ |
+| TC-03-13 | F-03-2 | 정상 | 점주가 AI 초안 생성 | AI 원본 초안과 대조 결과가 저장되고, 상태는 "미응답" 유지 | `tests/test_inquiry_flow.py::test_generate_draft_saves_ai_draft_and_check` | ✅ |
+| TC-03-14 | F-03-3 | 예외 | 초안에 틀린 가격·시각 | 대조 결과에 가격·시각 불일치 저장, 화면에 경고 | `tests/test_inquiry_flow.py::test_generate_draft_records_mismatch`, `::test_owner_generate_draft_shows_warning` | ✅ |
+| TC-03-15 | F-03-5 | 예외 | 점주 화면에서 AI 실패 | 초안 저장 안 함, "직접 답변을 작성" 안내 | `tests/test_inquiry_flow.py::test_generate_draft_ai_failure_keeps_inquiry`, `::test_owner_draft_ai_failure_message` | ✅ |
+| TC-03-16 | F-03-2 | 예외 | 없는 문의 번호 | 404 | `tests/test_inquiry_flow.py::test_owner_detail_404`, `::test_generate_draft_unknown_inquiry` | ✅ |
+
+### AI Adapter (정회성)
+
+| TC ID | 대상 | 구분 | 입력·조건 | 기대 결과 | 자동화 | 결과 |
+| --- | --- | --- | --- | --- | --- | --- |
+| TC-A-01 | Claude·Gemini·OpenAI | 정상 | 정상 응답 | 텍스트 추출, 요청에 프롬프트·시스템 규칙 포함 | `tests/test_ai_adapters.py::test_generate_returns_text` | ✅ |
+| TC-A-02 | API별 요청 형식 | 정상 | 각 API 요청 | 주소·인증 헤더·본문 형식이 API 규격과 일치 | `tests/test_ai_adapters.py::test_claude_request_shape` 외 2건 | ✅ |
+| TC-A-03 | 오류 응답 | 예외 | HTTP 500, 형식이 다른 응답 | `AIClientError` | `tests/test_ai_adapters.py::test_http_error_becomes_ai_client_error`, `::test_malformed_response_becomes_ai_client_error` | ✅ |
+| TC-A-04 | 네트워크 | 예외 | 연결 실패, 시간 초과 | `AIClientError` | `tests/test_ai_adapters.py::test_connection_error_becomes_ai_client_error`, `::test_timeout_becomes_ai_client_error` | ✅ |
+| TC-A-05 | 설정 | 예외 | 키·모델 미설정, 알 수 없는 제공사 | `AIClientError` | `tests/test_ai_adapters.py::test_missing_key_or_model`, `::test_factory_selects_provider` | ✅ |
+| TC-A-06 | 보안 | 예외 | 인증 실패(401) | 오류 메시지에 API 키가 나오지 않음 | `tests/test_ai_adapters.py::test_api_key_never_in_error_message` | ✅ |
 
 ## F-04 채널별 AI 홍보 문구 (전지호)
 
@@ -92,4 +109,4 @@
 
 ---
 
-**현황 (11/04)**: 자동화 ✅ 23건 / 미작성 ⬜ 17건. 미작성 행은 12~13주차에 각 담당자가 구현하면서 채웁니다.
+**현황 (11/10)**: 자동화 ✅ 37건 / 미작성 ⬜ 15건. 미작성 행은 12~13주차에 각 담당자가 구현하면서 채웁니다.
