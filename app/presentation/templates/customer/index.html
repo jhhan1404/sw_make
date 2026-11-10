@@ -2,6 +2,21 @@
 {% block title %}예약·문의{% endblock %}
 {% block content %}
 <h1 class="h4 mb-4">예약 및 문의</h1>
-<p>예약 신청 화면이 여기에 들어갑니다.</p>
-<a href="/inquiries/new" class="btn btn-outline-primary">문의하기</a>
+<div class="row g-3">
+  <div class="col-md-4"><div class="card card-body h-100">
+    <h2 class="h6">예약하기</h2>
+    <p class="text-muted small">날짜·시간·인원을 골라 예약을 신청합니다.</p>
+    <a href="/reservations/new" class="btn btn-primary mt-auto">예약 신청</a>
+  </div></div>
+  <div class="col-md-4"><div class="card card-body h-100">
+    <h2 class="h6">내 예약</h2>
+    <p class="text-muted small">연락처로 예약을 조회하고 변경·취소합니다.</p>
+    <a href="/reservations/lookup" class="btn btn-outline-primary mt-auto">예약 조회</a>
+  </div></div>
+  <div class="col-md-4"><div class="card card-body h-100">
+    <h2 class="h6">문의하기</h2>
+    <p class="text-muted small">매장에 궁금한 점을 남깁니다.</p>
+    <a href="/inquiries/new" class="btn btn-outline-primary mt-auto">문의 남기기</a>
+  </div></div>
+</div>
 {% endblock %}

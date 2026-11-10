@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}예약 관리{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h1 class="h4 mb-0">예약 관리</h1>
+  {% if stores %}
+  <form method="get" class="d-flex gap-2">
+    <select name="store_id" class="form-select form-select-sm" onchange="this.form.submit()">
+      {% for s in stores %}
+      <option value="{{ s.id }}" {% if selected and s.id == selected.id %}selected{% endif %}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">전체 상태</option>
+      {% for st in statuses %}
+      <option value="{{ st }}" {% if st == status %}selected{% endif %}>{{ st }}</option>
+      {% endfor %}
+    </select>
+  </form>
+  {% endif %}
+</div>
+
+{% if not reservations %}
+<div class="alert alert-secondary">조건에 맞는 예약이 없습니다.</div>
+{% else %}
+<div class="table-responsive">
+<table class="table table-hover align-middle bg-white">
+  <thead><tr><th>번호</th><th>일시</th><th>고객</th><th>인원</th><th>요청 사항</th><th>상태</th></tr></thead>
+  <tbody>
+  {% for r in reservations %}
+  <tr>
+    <td><a href="/owner/reservations/{{ r.id }}">{{ r.id }}</a></td>
+    <td class="text-nowrap"><a href="/owner/reservations/{{ r.id }}">{{ r.reserved_at.strftime('%m/%d %H:%M') }}</a></td>
+    <td class="text-nowrap"><a href="/owner/customers?phone={{ r.customer.phone }}">{{ r.customer.name }}</a></td>
+    <td>{{ r.party_size }}명</td>
+    <td>{{ r.request }}</td>
+    <td><span class="badge {{ badges[r.status] }}">{{ r.status }}</span></td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}
