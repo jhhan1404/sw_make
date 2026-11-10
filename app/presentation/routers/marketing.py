@@ -107,3 +107,4 @@ def list_marketing_contents(
         }
         for item in contents
     ]
+
