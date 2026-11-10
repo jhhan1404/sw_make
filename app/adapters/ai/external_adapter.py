@@ -8,7 +8,9 @@
 어떤 실패든 AIClientError로 바꿔서 던진다. API 키는 오류 메시지에 절대 넣지 않는다.
 """
 
+import time
 from abc import abstractmethod
+from collections.abc import Callable
 from typing import Any
 
 import httpx
@@ -16,6 +18,9 @@ import httpx
 from app.adapters.ai.base import AIClient, AIClientError
 
 MAX_OUTPUT_TOKENS = 1024
+# 429(호출 한도 초과), 503(일시 과부하)은 잠깐 기다리면 풀리는 경우가 많아 다시 시도한다.
+# 무료 등급(Gemini)에서 검증 실험 30건을 연달아 돌릴 때를 대비한 설정.
+RETRY_STATUS = {429, 503}
 
 
 class HttpAIClient(AIClient):
@@ -29,15 +34,27 @@ class HttpAIClient(AIClient):
         model: str,
         timeout: float = 30.0,
         transport: httpx.BaseTransport | None = None,
+        max_retries: int = 2,
+        retry_wait: float = 5.0,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
         self.transport = transport  # 테스트에서 가짜 응답을 넣을 때만 사용
+        self.max_retries = max_retries
+        self.retry_wait = retry_wait
+        self.sleep = sleep  # 테스트에서는 실제로 기다리지 않도록 바꿔 끼운다
 
     def generate(self, prompt: str, system: str | None = None) -> str:
         self._check_config()
-        response = self._post(self.payload(prompt, system))
+        body = self.payload(prompt, system)
+        response = self._post(body)
+        for attempt in range(1, self.max_retries + 1):
+            if response.status_code not in RETRY_STATUS:
+                break
+            self.sleep(self.retry_wait * attempt)
+            response = self._post(body)
         return self._extract_text(response)
 
     def _check_config(self) -> None:
@@ -56,6 +73,10 @@ class HttpAIClient(AIClient):
             raise AIClientError(f"{self.provider_name} 연결 실패: {type(e).__name__}") from e
 
     def _extract_text(self, response: httpx.Response) -> str:
+        if response.status_code == 429:
+            raise AIClientError(
+                f"{self.provider_name} 호출 한도 초과 (HTTP 429). 잠시 후 다시 시도"
+            )
         if response.status_code != 200:
             raise AIClientError(f"{self.provider_name} 오류 (HTTP {response.status_code})")
         try:

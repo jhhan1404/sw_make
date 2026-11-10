@@ -13,7 +13,7 @@ from app.adapters.ai.external_adapter import (
     OpenAIClient,
 )
 from app.adapters.ai.mock_adapter import MockAIClient
-from app.config import AI_API_KEY, AI_MODEL, AI_PROVIDER, AI_TIMEOUT
+from app.config import AI_API_KEY, AI_MAX_RETRIES, AI_MODEL, AI_PROVIDER, AI_TIMEOUT
 
 PROVIDERS: dict[str, type[HttpAIClient]] = {
     "claude": ClaudeAIClient,
@@ -32,4 +32,6 @@ def get_ai_client(
     if provider not in PROVIDERS:
         allowed = ", ".join(["mock", *PROVIDERS])
         raise AIClientError(f"알 수 없는 AI_PROVIDER: {provider} (가능: {allowed})")
-    return PROVIDERS[provider](api_key=api_key, model=model, timeout=AI_TIMEOUT)
+    return PROVIDERS[provider](
+        api_key=api_key, model=model, timeout=AI_TIMEOUT, max_retries=AI_MAX_RETRIES
+    )

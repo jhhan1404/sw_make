@@ -60,7 +60,7 @@ PM은 일정과 회의를 관리하고, 요구분석 문서를 책임지며, 예
   - Claude 문서에서 팀원 의견을 반영해 마무리한 뒤, Word와 PDF로 내려받아 `docs/planning/`에 올립니다.
   - 완료 기준: 기능 요구사항 18개에 ID·우선순위가 있고, 비기능 요구사항 2개 이상, 유스케이스 다이어그램과 명세(UC-01 ~ UC-08)가 포함됨
 - [ ] **PR #1 내용 확인** (정회성의 10주차 가이드 문서, README 팀원별 할 일)
-- [ ] **10/30(금) 팀 회의 진행**: AI API 결정(→ 11/10 Claude로 확정), 11주차 일정 확인
+- [ ] **10/30(금) 팀 회의 진행**: AI API 결정(→ 11/10 Gemini로 확정), 11주차 일정 확인
   - 회의록: `docs/meetings/week10.md` ([양식](docs/meetings/README.md))
 
 **11주차 (11/3 ~ 11/9) · 설계**
@@ -145,7 +145,7 @@ PM은 일정과 회의를 관리하고, 요구분석 문서를 책임지며, 예
 - [x] GitHub 레포 생성, 프로젝트 뼈대 업로드
 - [x] 브랜치 규칙·Git 가이드 공유 → [docs/git_guide.md](docs/git_guide.md)
 - [x] AI API 후보 비교·키 발급 가이드 → [docs/ai_api_selection.md](docs/ai_api_selection.md)
-- [x] AI API 결정: **Claude** (11/10, [결정 기록](docs/ai_api_selection.md#4-결정-기록))
+- [x] AI API 결정: **Gemini 무료 등급** (11/10, [결정 기록](docs/ai_api_selection.md#4-결정-기록))
 
 **11주차 (11/3 ~ 11/9) · 설계**
 
@@ -161,7 +161,7 @@ PM은 일정과 회의를 관리하고, 요구분석 문서를 책임지며, 예
 - [x] **실제 AI Adapter 구현** → `app/adapters/ai/external_adapter.py` (Claude·Gemini·OpenAI 3종, `.env`의 `AI_PROVIDER`로 선택. 실제 키 연결 확인은 API 결정 후)
 - [x] **F-03 문의 등록(고객 화면) + AI 답변 초안 생성(점주 화면)** (F-03-1, F-03-2, F-03-3 대조 결과 저장·경고 표시까지)
   - 고객: `/inquiries/new` · 점주: `/owner/inquiries`
-- [ ] **Claude API 키 발급** → `.env` 설정 → `python -m app.adapters.ai.check`로 연결 확인 ([순서](docs/ai_api_selection.md#6-claude-키-발급과-연결-확인))
+- [ ] **Gemini API 키 발급** → `.env` 설정 → `python -m app.adapters.ai.check`로 연결 확인 ([순서](docs/ai_api_selection.md#6-gemini-키-발급과-연결-확인))
 
 **13주차 (11/17 ~ 11/23) · 구현 2·검증** ← 정회성이 가장 바쁜 주
 
@@ -182,7 +182,7 @@ PM은 일정과 회의를 관리하고, 요구분석 문서를 책임지며, 예
 
 - [ ] **10주차**: 레포 초대 수락 → [Git 가이드](docs/git_guide.md) 1번대로 clone → `pytest`가 **29 passed**인지 확인
   - [ ] 한재형 · [ ] 전지호 · [ ] 정회성
-- [x] **10주차**: AI API 결정 → **Claude** (11/10)
+- [x] **10주차**: AI API 결정 → **Gemini 무료 등급** (11/10)
 - [ ] **11주차**: 각자 담당 가상 데이터 완성
 - [ ] **14주차 (선택)**: 확장 기능 1개 — 예약 알림 메시지 / 리뷰 답글 초안 / 월간 홍보 캘린더. 필수 기능이 다 끝났을 때만
 - [ ] **15주차 (12/1)**: 최종 발표 및 시연
@@ -246,7 +246,7 @@ ruff check .     # 린트
 ruff format .    # 포맷
 ```
 
-`.env`의 `AI_PROVIDER=mock`이면 실제 AI를 호출하지 않습니다. 실제 API는 `claude` / `gemini` / `openai` 중 하나와 `AI_API_KEY`, `AI_MODEL`을 함께 설정합니다. 실제 API 키는 정회성만 관리하며, 단톡방이나 코드에 절대 올리지 않습니다.
+`.env`의 `AI_PROVIDER=mock`이면 실제 AI를 호출하지 않습니다. 실제 API는 팀 결정대로 `AI_PROVIDER=gemini`와 `AI_API_KEY`, `AI_MODEL`을 함께 설정합니다(`claude`, `openai`도 지원). 실제 API 키는 정회성만 관리하며, 단톡방이나 코드에 절대 올리지 않습니다.
 
 ## 폴더 구조
 

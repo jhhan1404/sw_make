@@ -122,3 +122,44 @@ def test_check_command(monkeypatch, capsys):
 
     monkeypatch.setattr(check, "get_ai_client", lambda: MockAIClient(fail=True))
     assert check.main() == 1 and "실패" in capsys.readouterr().out
+
+
+def sequence_client(statuses, max_retries=2):
+    """정해진 순서대로 상태 코드를 돌려주는 Gemini 클라이언트와 대기 기록."""
+    calls, waits = {"n": 0}, []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        status = statuses[min(calls["n"], len(statuses) - 1)]
+        calls["n"] += 1
+        body = SAMPLE_RESPONSES[GeminiAIClient] if status == 200 else {"error": "x"}
+        return httpx.Response(status, json=body)
+
+    client = GeminiAIClient(
+        api_key="k",
+        model="m",
+        transport=httpx.MockTransport(handler),
+        max_retries=max_retries,
+        retry_wait=1.0,
+        sleep=waits.append,
+    )
+    return client, calls, waits
+
+
+def test_retry_after_429_then_success():
+    client, calls, waits = sequence_client([429, 200])
+    assert client.generate("질문") == "답변입니다."
+    assert calls["n"] == 2 and waits == [1.0]
+
+
+def test_retry_gives_up_with_clear_message():
+    client, calls, waits = sequence_client([429, 429, 429])
+    with pytest.raises(AIClientError, match="호출 한도 초과"):
+        client.generate("질문")
+    assert calls["n"] == 3 and waits == [1.0, 2.0]
+
+
+def test_no_retry_on_other_errors():
+    client, calls, _ = sequence_client([400])
+    with pytest.raises(AIClientError, match="HTTP 400"):
+        client.generate("질문")
+    assert calls["n"] == 1
