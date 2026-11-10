@@ -56,4 +56,3 @@ def list_marketing_contents(
     )
 
     return list(session.scalars(statement).all())
-
