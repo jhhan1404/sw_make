@@ -55,4 +55,4 @@ def list_marketing_contents(
         .limit(limit)
     )
 
-    return list(session.scalars(statement).all()) 
+    return list(session.scalars(statement).all())
