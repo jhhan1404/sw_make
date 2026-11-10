@@ -16,7 +16,7 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env             # Windows: copy .env.example .env
-pytest                           # "29 passed" 가 나오면 성공
+pytest                           # failed 없이 모두 passed면 성공 (11/10 기준 92 passed)
 ```
 
 `pytest`가 통과하면 README의 10주차 "각자 PC에서 실행 확인"을 체크한다.
