@@ -28,6 +28,7 @@ StoreSvcDep = Annotated[StoreService, Depends(get_store_service)]
 
 # ── 대시보드 ──────────────────────────────────────────────
 
+
 @router.get("", response_class=HTMLResponse)
 def dashboard(request: Request) -> HTMLResponse:
     """점주 대시보드 (F-05). TODO(전지호): 오늘 예약·미응답 문의·최근 콘텐츠 조회."""
@@ -37,6 +38,7 @@ def dashboard(request: Request) -> HTMLResponse:
 
 
 # ── Pydantic 스키마 (F-01) ────────────────────────────────
+
 
 class StoreUpdate(BaseModel):
     name: str | None = None
@@ -75,13 +77,14 @@ class FAQUpdate(BaseModel):
 
 # ── 매장 정보 엔드포인트 (F-01-1) ─────────────────────────
 
+
 @router.get("/stores/{store_id}")
 def get_store(store_id: int, svc: StoreSvcDep):
     """매장 정보 조회."""
     try:
         store = svc.get_store(store_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return {
         "id": store.id,
         "name": store.name,
@@ -101,11 +104,12 @@ def update_store(store_id: int, body: StoreUpdate, svc: StoreSvcDep):
     try:
         store = svc.update_store(store_id, **body.model_dump(exclude_none=True))
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return {"id": store.id, "name": store.name}
 
 
 # ── 메뉴 엔드포인트 (F-01-2) ──────────────────────────────
+
 
 @router.get("/stores/{store_id}/menus")
 def list_menus(store_id: int, svc: StoreSvcDep):
@@ -113,10 +117,15 @@ def list_menus(store_id: int, svc: StoreSvcDep):
     try:
         items = svc.list_menus(store_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return [
-        {"id": m.id, "name": m.name, "price": m.price,
-         "description": m.description, "on_sale": m.on_sale}
+        {
+            "id": m.id,
+            "name": m.name,
+            "price": m.price,
+            "description": m.description,
+            "on_sale": m.on_sale,
+        }
         for m in items
     ]
 
@@ -127,7 +136,7 @@ def add_menu(store_id: int, body: MenuCreate, svc: StoreSvcDep):
     try:
         item = svc.add_menu(store_id, body.name, body.price, body.description, body.on_sale)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)) from e
     return {"id": item.id, "name": item.name, "price": item.price}
 
 
@@ -137,7 +146,7 @@ def update_menu(store_id: int, menu_id: int, body: MenuUpdate, svc: StoreSvcDep)
     try:
         item = svc.update_menu(store_id, menu_id, **body.model_dump(exclude_none=True))
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return {"id": item.id, "name": item.name, "price": item.price, "on_sale": item.on_sale}
 
 
@@ -147,10 +156,11 @@ def delete_menu(store_id: int, menu_id: int, svc: StoreSvcDep):
     try:
         svc.delete_menu(store_id, menu_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
 # ── FAQ 엔드포인트 (F-01-3) ───────────────────────────────
+
 
 @router.get("/stores/{store_id}/faqs")
 def list_faqs(store_id: int, svc: StoreSvcDep):
@@ -158,7 +168,7 @@ def list_faqs(store_id: int, svc: StoreSvcDep):
     try:
         faqs = svc.list_faqs(store_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return [{"id": f.id, "question": f.question, "answer": f.answer} for f in faqs]
 
 
@@ -168,7 +178,7 @@ def add_faq(store_id: int, body: FAQCreate, svc: StoreSvcDep):
     try:
         faq = svc.add_faq(store_id, body.question, body.answer)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(e)) from e
     return {"id": faq.id, "question": faq.question}
 
 
@@ -178,7 +188,7 @@ def update_faq(store_id: int, faq_id: int, body: FAQUpdate, svc: StoreSvcDep):
     try:
         faq = svc.update_faq(store_id, faq_id, **body.model_dump(exclude_none=True))
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
     return {"id": faq.id, "question": faq.question, "answer": faq.answer}
 
 
@@ -188,4 +198,4 @@ def delete_faq(store_id: int, faq_id: int, svc: StoreSvcDep):
     try:
         svc.delete_faq(store_id, faq_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e

@@ -19,9 +19,14 @@ class StoreRepository:
     def update(self, store: Store, **fields) -> Store:
         """허용된 필드만 덮어쓴 뒤 커밋."""
         allowed = {
-            "name", "category", "address",
-            "open_time", "close_time", "closed_days",
-            "phone", "capacity_per_hour",
+            "name",
+            "category",
+            "address",
+            "open_time",
+            "close_time",
+            "closed_days",
+            "phone",
+            "capacity_per_hour",
         }
         for key, value in fields.items():
             if key not in allowed:
@@ -49,8 +54,9 @@ class MenuRepository:
     def get(self, menu_id: int) -> MenuItem | None:
         return self.session.get(MenuItem, menu_id)
 
-    def add(self, store_id: int, name: str, price: int,
-            description: str = "", on_sale: bool = True) -> MenuItem:
+    def add(
+        self, store_id: int, name: str, price: int, description: str = "", on_sale: bool = True
+    ) -> MenuItem:
         item = MenuItem(
             store_id=store_id,
             name=name,
@@ -85,12 +91,7 @@ class FAQRepository:
         self.session = session
 
     def list_by_store(self, store_id: int) -> list[FAQ]:
-        return (
-            self.session.query(FAQ)
-            .filter(FAQ.store_id == store_id)
-            .order_by(FAQ.id)
-            .all()
-        )
+        return self.session.query(FAQ).filter(FAQ.store_id == store_id).order_by(FAQ.id).all()
 
     def get(self, faq_id: int) -> FAQ | None:
         return self.session.get(FAQ, faq_id)

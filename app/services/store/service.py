@@ -39,7 +39,8 @@ class StoreService:
     ) -> Store:
         store = self.get_store(store_id)
         fields = {
-            k: v for k, v in {
+            k: v
+            for k, v in {
                 "name": name,
                 "category": category,
                 "address": address,

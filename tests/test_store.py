@@ -1,9 +1,9 @@
 """F-01 매장·메뉴·FAQ 관리 API 테스트."""
 
-import pytest
-from fastapi.testclient import TestClient
 from datetime import time
 
+import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -12,7 +12,6 @@ from app.db.database import Base, get_session
 from app.main import app
 from app.models import models  # noqa: F401 — 모든 모델 테이블 등록
 from app.models.models import Store
-
 
 # ── 테스트용 인메모리 DB 설정 ──────────────────────────────
 
@@ -69,6 +68,7 @@ def store_id(client):
 
 # ── 매장 조회·수정 ────────────────────────────────────────
 
+
 class TestStoreInfo:
     def test_get_store(self, client, store_id):
         res = client.get(f"/owner/stores/{store_id}")
@@ -92,6 +92,7 @@ class TestStoreInfo:
 
 # ── 메뉴 CRUD ─────────────────────────────────────────────
 
+
 class TestMenu:
     def test_add_and_list(self, client, store_id):
         # 추가
@@ -100,7 +101,7 @@ class TestMenu:
             json={"name": "아메리카노", "price": 4000},
         )
         assert res.status_code == 201
-        menu_id = res.json()["id"]
+        assert res.json()["id"]  # 생성된 메뉴에 id가 부여됨
 
         # 목록 조회
         res = client.get(f"/owner/stores/{store_id}/menus")
@@ -144,6 +145,7 @@ class TestMenu:
 
 
 # ── FAQ CRUD ──────────────────────────────────────────────
+
 
 class TestFAQ:
     def test_add_and_list(self, client, store_id):
