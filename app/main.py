@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db.database import init_db
-from app.presentation.routers import customer, inquiry, owner, marketing
+from app.presentation.routers import customer, inquiry, marketing, owner
 
 
 @asynccontextmanager
