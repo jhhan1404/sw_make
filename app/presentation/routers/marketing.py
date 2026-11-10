@@ -34,9 +34,7 @@ def generate_marketing_content(
             detail="매장을 찾을 수 없습니다.",
         )
 
-    menus = session.query(MenuItem).filter(
-        MenuItem.store_id == body.store_id
-    ).all()
+    menus = session.query(MenuItem).filter(MenuItem.store_id == body.store_id).all()
 
     service = MarketingService(get_ai_client())
 
