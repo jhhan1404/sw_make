@@ -19,6 +19,7 @@ class ContentResult:
     violations: list[str]
     error: str | None = None
 
+
 MENU_PRICE_PATTERN = re.compile(
     r"([가-힣A-Za-z0-9][가-힣A-Za-z0-9\s·()_-]{0,30}?)"
     r"(?:은|는|이|가)\s*(?:가격은\s*)?[\d,]+\s*원"
@@ -52,11 +53,7 @@ class MarketingService:
 
         # 매장 및 메뉴 정보가 전달되면 가격과 영업시간 검증
         if store is not None and menus is not None:
-            menu_prices = {
-                menu.name: menu.price
-                for menu in menus
-                if menu.on_sale
-            }
+            menu_prices = {menu.name: menu.price for menu in menus if menu.on_sale}
 
             fact_checker = FactChecker(
                 menu_prices=menu_prices,
@@ -67,14 +64,8 @@ class MarketingService:
             mismatches = fact_checker.check(text)
 
             for mismatch in mismatches:
-                violations.append(
-                    f"{mismatch.kind}: {mismatch.found} - {mismatch.message}"
-                )
-            registered_names = {
-                menu.name.strip()
-                for menu in menus
-                if menu.on_sale
-            }
+                violations.append(f"{mismatch.kind}: {mismatch.found} - {mismatch.message}")
+            registered_names = {menu.name.strip() for menu in menus if menu.on_sale}
 
             candidates = MENU_PRICE_PATTERN.findall(text)
 
@@ -82,9 +73,7 @@ class MarketingService:
                 menu_name = candidate.strip()
 
                 if menu_name not in registered_names:
-                    violations.append(
-                        f"Unregistered menu name: {menu_name}"
-                    )
+                    violations.append(f"Unregistered menu name: {menu_name}")
 
         return ContentResult(
             text=text,
