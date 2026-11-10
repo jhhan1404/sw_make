@@ -129,10 +129,17 @@ class GeminiAIClient(HttpAIClient):
     """Google Gemini API (generateContent)."""
 
     provider_name = "Gemini"
+    # Gemini 3 계열은 답하기 전에 '생각(thinking)'을 하고, 그 분량도 출력 한도에 포함된다.
+    # 한도가 작으면 생각만 하다 답이 비어서 오므로 넉넉하게 둔다. (무료 등급은 토큰 요금 없음)
+    max_output_tokens = 8192
 
     def endpoint(self) -> str:
         base = "https://generativelanguage.googleapis.com/v1beta/models"
-        return f"{base}/{self.model}:generateContent"
+        return f"{base}/{self._model_id()}:generateContent"
+
+    def _model_id(self) -> str:
+        """AI Studio 예제 코드의 'models/gemini-...' 형식도 그대로 받는다."""
+        return self.model.removeprefix("models/")
 
     def headers(self) -> dict[str, str]:
         return {"x-goog-api-key": self.api_key}
@@ -140,15 +147,21 @@ class GeminiAIClient(HttpAIClient):
     def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
         body: dict[str, Any] = {
             "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": MAX_OUTPUT_TOKENS},
+            "generationConfig": {"maxOutputTokens": self.max_output_tokens},
         }
         if system:
             body["systemInstruction"] = {"parts": [{"text": system}]}
         return body
 
     def parse(self, data: dict[str, Any]) -> str:
-        parts = data["candidates"][0]["content"]["parts"]
-        return "".join(p.get("text", "") for p in parts)
+        candidate = data["candidates"][0]
+        parts = candidate.get("content", {}).get("parts", [])
+        # 생각 요약(thought)이 섞여 오면 빼고 실제 답변만 쓴다.
+        text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+        if not text.strip() and "finishReason" in candidate:
+            reason = candidate["finishReason"]
+            raise AIClientError(f"Gemini 응답이 비어 있습니다 (finishReason={reason})")
+        return text
 
 
 class OpenAIClient(HttpAIClient):

@@ -163,3 +163,35 @@ def test_no_retry_on_other_errors():
     with pytest.raises(AIClientError, match="HTTP 400"):
         client.generate("질문")
     assert calls["n"] == 1
+
+
+def test_gemini_accepts_models_prefix():
+    """AI Studio '코드 가져오기'의 models/... 형식을 그대로 넣어도 주소가 한 번만 붙는다."""
+    client, seen = make_client(GeminiAIClient)
+    client.model = "models/gemini-3.8-flash"
+    client.generate("질문")
+    assert "/v1beta/models/gemini-3.8-flash:generateContent" in seen["url"]
+    assert "models/models" not in seen["url"]
+
+
+def test_gemini_skips_thought_parts():
+    body = {
+        "candidates": [
+            {"content": {"parts": [{"text": "고민 중...", "thought": True}, {"text": "답변"}]}}
+        ]
+    }
+    client, _ = make_client(GeminiAIClient, body=body)
+    assert client.generate("질문") == "답변"
+
+
+def test_gemini_empty_answer_reports_reason():
+    body = {"candidates": [{"content": {"parts": []}, "finishReason": "MAX_TOKENS"}]}
+    client, _ = make_client(GeminiAIClient, body=body)
+    with pytest.raises(AIClientError, match="MAX_TOKENS"):
+        client.generate("질문")
+
+
+def test_gemini_output_limit_leaves_room_for_thinking():
+    client, seen = make_client(GeminiAIClient)
+    client.generate("질문")
+    assert seen["body"]["generationConfig"]["maxOutputTokens"] >= 8192
