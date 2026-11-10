@@ -1,0 +1,18 @@
+[
+  {"store": "cafe", "customer": {"name": "김하늘", "phone": "010-0000-0101"}, "reserved_at": "2026-11-05T12:00", "party_size": 4, "request": "창가 자리", "status": "방문완료"},
+  {"store": "cafe", "customer": {"name": "이도윤", "phone": "010-0000-0102"}, "reserved_at": "2026-11-07T15:00", "party_size": 2, "status": "노쇼"},
+  {"store": "cafe", "customer": {"name": "박서연", "phone": "010-0000-0103"}, "reserved_at": "2026-11-08T11:00", "party_size": 3, "status": "취소"},
+  {"store": "cafe", "customer": {"name": "김하늘", "phone": "010-0000-0101"}, "reserved_at": "2026-11-12T13:00", "party_size": 4, "status": "확정"},
+  {"store": "cafe", "customer": {"name": "최지우", "phone": "010-0000-0104"}, "reserved_at": "2026-11-13T19:00", "party_size": 6, "request": "생일 케이크 보관 부탁드려요", "status": "요청"},
+  {"store": "cafe", "customer": {"name": "정민준", "phone": "010-0000-0105"}, "reserved_at": "2026-11-14T14:00", "party_size": 2, "status": "요청"},
+  {"store": "cafe", "customer": {"name": "한지아", "phone": "010-0000-0110"}, "reserved_at": "2026-11-15T10:00", "party_size": 8, "request": "스터디 모임", "status": "확정"},
+  {"store": "cafe", "customer": {"name": "오유진", "phone": "010-0000-0111"}, "reserved_at": "2026-11-15T10:30", "party_size": 2, "status": "요청"},
+  {"store": "cafe", "customer": {"name": "이도윤", "phone": "010-0000-0102"}, "reserved_at": "2026-11-18T17:00", "party_size": 2, "status": "요청"},
+  {"store": "salon", "customer": {"name": "윤시우", "phone": "010-0000-0107"}, "reserved_at": "2026-11-06T14:00", "party_size": 1, "request": "여성 커트", "status": "방문완료"},
+  {"store": "salon", "customer": {"name": "강예은", "phone": "010-0000-0106"}, "reserved_at": "2026-11-08T16:00", "party_size": 1, "status": "노쇼"},
+  {"store": "salon", "customer": {"name": "윤시우", "phone": "010-0000-0107"}, "reserved_at": "2026-11-12T11:00", "party_size": 1, "request": "뿌리 염색", "status": "확정"},
+  {"store": "salon", "customer": {"name": "장하린", "phone": "010-0000-0108"}, "reserved_at": "2026-11-13T15:00", "party_size": 2, "request": "모녀 커트", "status": "요청"},
+  {"store": "salon", "customer": {"name": "서도현", "phone": "010-0000-0112"}, "reserved_at": "2026-11-14T18:00", "party_size": 1, "status": "요청"},
+  {"store": "salon", "customer": {"name": "김하늘", "phone": "010-0000-0101"}, "reserved_at": "2026-11-15T13:00", "party_size": 3, "status": "확정"},
+  {"store": "salon", "customer": {"name": "박서연", "phone": "010-0000-0103"}, "reserved_at": "2026-11-19T10:00", "party_size": 1, "status": "취소"}
+]

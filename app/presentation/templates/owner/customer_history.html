@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}고객 이력{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">고객 이력</h1>
+
+<form method="get" class="card card-body mb-4">
+  <label for="phone" class="form-label">고객 연락처</label>
+  <div class="d-flex gap-2">
+    <input id="phone" name="phone" class="form-control" placeholder="010-1234-5678" value="{{ phone }}" required>
+    <button class="btn btn-primary text-nowrap">검색</button>
+  </div>
+</form>
+
+{% if phone %}
+  {% if not history %}
+  <div class="alert alert-secondary">이 연락처의 고객이 없습니다.</div>
+  {% else %}
+  <div class="card card-body mb-3">
+    <strong>{{ history.customer.name }}</strong> ({{ history.customer.phone }})
+    <div>방문 {{ history.visit_count }}회 · 노쇼 {{ history.no_show_count }}회 · 전체 예약 {{ history.reservations|length }}건</div>
+  </div>
+  <table class="table align-middle bg-white">
+    <thead><tr><th>번호</th><th>매장</th><th>일시</th><th>인원</th><th>상태</th></tr></thead>
+    <tbody>
+    {% for r in history.reservations %}
+    <tr>
+      <td><a href="/owner/reservations/{{ r.id }}">{{ r.id }}</a></td>
+      <td>{{ r.store.name }}</td>
+      <td class="text-nowrap">{{ r.reserved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      <td>{{ r.party_size }}명</td>
+      <td><span class="badge {{ badges[r.status] }}">{{ r.status }}</span></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="text-muted">예약 이력이 없습니다.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+{% endif %}
+{% endblock %}

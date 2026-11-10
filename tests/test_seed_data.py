@@ -2,7 +2,7 @@
 """가상 데이터 품질 검사 (11주차). 13주차 AI 검증 실험의 전제가 깨지지 않았는지 확인한다."""
 
 from collections import Counter
-from datetime import time
+from datetime import datetime, time
 
 import pytest
 from sqlalchemy import create_engine
@@ -89,3 +89,18 @@ def test_unknown_store_key_is_reported(session, tmp_path):
     (tmp_path / "faqs.json").write_text('[{"store": "bakery", "question": "q", "answer": "a"}]')
     with pytest.raises(SeedDataError):
         load_all(session, tmp_path)
+
+
+def test_reservations_follow_store_rules():
+    """예약 가상 데이터도 휴무일·영업시간·시간당 정원 규칙을 지켜야 F-02 시연이 맞아떨어진다."""
+    booked: Counter = Counter()
+    for r in read_json(DATA_DIR, "reservations"):
+        store, at = stores[r["store"]], datetime.fromisoformat(r["reserved_at"])
+        assert "월화수목금토일"[at.weekday()] not in store["closed_days"], r
+        open_, close = (time.fromisoformat(store[k]) for k in ("open_time", "close_time"))
+        assert open_ <= at.time() < close, r
+        assert r["status"] in ("요청", "확정", "방문완료", "취소", "노쇼"), r
+        if r["status"] in ("요청", "확정"):
+            booked[(r["store"], at.replace(minute=0))] += r["party_size"]
+    for (key, _), size in booked.items():
+        assert size <= stores[key]["capacity_per_hour"]
