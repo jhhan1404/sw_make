@@ -16,7 +16,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.db.database import Base, SessionLocal, engine, init_db
+from app.db.database import Base, SessionLocal, create_tables, engine
 from app.models.models import (
     FAQ,
     Customer,
@@ -148,7 +148,7 @@ def load_all(session: Session, data_dir: Path = DATA_DIR) -> dict[str, int]:
 
 
 def seed(reset: bool = False) -> None:
-    init_db()
+    create_tables()
     if reset:
         Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
