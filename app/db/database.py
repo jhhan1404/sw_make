@@ -42,57 +42,61 @@ def init_db() -> None:
             session.flush()  # store.id 확정
 
             # 메뉴 3개
-            session.add_all([
-                models.MenuItem(
-                    store_id=1,
-                    name="아메리카노",
-                    price=4500,
-                    description="깔끔하고 진한 에스프레소 베이스 아메리카노",
-                    on_sale=True,
-                ),
-                models.MenuItem(
-                    store_id=1,
-                    name="카페라떼",
-                    price=5500,
-                    description="부드러운 우유 거품이 올라간 클래식 라떼",
-                    on_sale=True,
-                ),
-                models.MenuItem(
-                    store_id=1,
-                    name="딸기 스무디",
-                    price=6500,
-                    description="신선한 딸기로 만든 달콤한 스무디",
-                    on_sale=True,
-                ),
-            ])
+            session.add_all(
+                [
+                    models.MenuItem(
+                        store_id=1,
+                        name="아메리카노",
+                        price=4500,
+                        description="깔끔하고 진한 에스프레소 베이스 아메리카노",
+                        on_sale=True,
+                    ),
+                    models.MenuItem(
+                        store_id=1,
+                        name="카페라떼",
+                        price=5500,
+                        description="부드러운 우유 거품이 올라간 클래식 라떼",
+                        on_sale=True,
+                    ),
+                    models.MenuItem(
+                        store_id=1,
+                        name="딸기 스무디",
+                        price=6500,
+                        description="신선한 딸기로 만든 달콤한 스무디",
+                        on_sale=True,
+                    ),
+                ]
+            )
 
             # FAQ 3개
-            session.add_all([
-                models.FAQ(
-                    store_id=1,
-                    question="예약은 어떻게 하나요?",
-                    answer=(
-                        "홈페이지 상단 '예약하기' 메뉴를 통해 "
-                        "날짜와 인원을 선택하여 예약하실 수 있습니다."
+            session.add_all(
+                [
+                    models.FAQ(
+                        store_id=1,
+                        question="예약은 어떻게 하나요?",
+                        answer=(
+                            "홈페이지 상단 '예약하기' 메뉴를 통해 "
+                            "날짜와 인원을 선택하여 예약하실 수 있습니다."
+                        ),
                     ),
-                ),
-                models.FAQ(
-                    store_id=1,
-                    question="주차 가능한가요?",
-                    answer=(
-                        "매장 근처 공영주차장을 이용하실 수 있습니다. "
-                        "도보 3분 거리에 위치해 있습니다."
+                    models.FAQ(
+                        store_id=1,
+                        question="주차 가능한가요?",
+                        answer=(
+                            "매장 근처 공영주차장을 이용하실 수 있습니다. "
+                            "도보 3분 거리에 위치해 있습니다."
+                        ),
                     ),
-                ),
-                models.FAQ(
-                    store_id=1,
-                    question="단체 예약도 가능한가요?",
-                    answer=(
-                        "10인 이상 단체 예약은 전화(02-1234-5678)로 "
-                        "문의해 주시면 안내해 드립니다."
+                    models.FAQ(
+                        store_id=1,
+                        question="단체 예약도 가능한가요?",
+                        answer=(
+                            "10인 이상 단체 예약은 전화(02-1234-5678)로 "
+                            "문의해 주시면 안내해 드립니다."
+                        ),
                     ),
-                ),
-            ])
+                ]
+            )
 
             session.commit()
 
