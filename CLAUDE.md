@@ -148,7 +148,7 @@ presentation → services → repositories → models
 | 기능 | 담당 | 브랜치 예시 |
 | --- | --- | --- |
 | F-01 매장·메뉴·FAQ 관리 | 한재형 | `feature/F-01-store` |
-| F-02 예약·고객 관리 (State 패턴) | 한재형 | `feature/F-02-reservation` |
+| F-02 예약·고객 관리 (State 패턴) | 정회성(12주차 구현) → 한재형(13주차 마무리·통합), WBS v2 | `feature/F-02-reservation` |
 | F-03 AI 문의 응대 (Adapter 패턴) | 정회성 | `feature/F-03-inquiry` |
 | F-04 채널별 마케팅 콘텐츠 생성 (Strategy 패턴) | 전지호 | `feature/F-04-marketing` |
 | F-05 점주 대시보드 | 전지호 | `feature/F-05-dashboard` |
@@ -160,7 +160,7 @@ presentation → services → repositories → models
 | 기능 | 담당 | 상태 | 비고 |
 | --- | --- | --- | --- |
 | F-01 매장·메뉴·FAQ 관리 | 한재형 | ✅ 완료 | pytest 11개 통과, main 머지 |
-| F-02 예약·고객 관리 | 한재형 | 🔄 진행 중 | |
+| F-02 예약·고객 관리 | 정회성 → 한재형 | ✅ 12주차 범위 완료 | PR #16 (WBS v2로 12주차 정회성 구현), 13주차 한재형 마무리·통합 |
 | F-03 AI 문의 응대 | 정회성 | 🔄 진행 중 | |
 | F-04 채널별 마케팅 콘텐츠 생성 | 전지호 | 🔄 진행 중 | |
 | F-05 점주 대시보드 | 전지호 | 🔄 진행 중 | |
