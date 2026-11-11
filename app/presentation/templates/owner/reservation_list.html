@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_owner.html" %}
 {% block title %}예약 관리{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -28,10 +28,10 @@
   <thead><tr><th>번호</th><th>일시</th><th>고객</th><th>인원</th><th>요청 사항</th><th>상태</th></tr></thead>
   <tbody>
   {% for r in reservations %}
-  <tr>
-    <td><a href="/owner/reservations/{{ r.id }}">{{ r.id }}</a></td>
-    <td class="text-nowrap"><a href="/owner/reservations/{{ r.id }}">{{ r.reserved_at.strftime('%m/%d %H:%M') }}</a></td>
-    <td class="text-nowrap"><a href="/owner/customers?phone={{ r.customer.phone }}">{{ r.customer.name }}</a></td>
+  <tr onclick="location.href='/owner/reservations/{{ r.id }}'" style="cursor:pointer;">
+    <td>{{ r.id }}</td>
+    <td class="text-nowrap">{{ r.reserved_at.strftime('%m/%d %H:%M') }}</td>
+    <td class="text-nowrap">{{ r.customer.name }}</td>
     <td>{{ r.party_size }}명</td>
     <td>{{ r.request }}</td>
     <td><span class="badge {{ badges[r.status] }}">{{ r.status }}</span></td>

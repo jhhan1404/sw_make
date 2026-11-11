@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}문의 #{{ inquiry.id }}{% endblock %}
+{% block content %}
+<p><a href="/owner/inquiries?store_id={{ inquiry.store_id }}">← 문의함</a></p>
+
+<div class="card card-body mb-3">
+  <div class="d-flex justify-content-between">
+    <h1 class="h5 mb-2">{{ inquiry.customer.name }} <small class="text-muted">{{ inquiry.customer.phone }}</small></h1>
+    <span class="badge align-self-start {{ 'text-bg-warning' if inquiry.status == '미응답' else 'text-bg-success' }}">{{ inquiry.status }}</span>
+  </div>
+  <p class="text-muted small mb-2">{{ inquiry.store.name }} · {{ inquiry.received_at.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p class="mb-0" style="white-space: pre-wrap">{{ inquiry.content }}</p>
+</div>
+
+{% if ai_error %}
+<div class="alert alert-danger">AI 초안을 만들지 못했습니다. 잠시 후 다시 시도하거나 직접 답변을 작성해 주세요.</div>
+{% endif %}
+
+<div class="card card-body">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="h6 mb-0">답변 초안</h2>
+    <form method="post" action="/owner/inquiries/{{ inquiry.id }}/draft">
+      <button class="btn btn-sm btn-primary">{{ 'AI 초안 다시 만들기' if inquiry.ai_draft else 'AI 초안 생성' }}</button>
+    </form>
+  </div>
+
+  {% if inquiry.ai_draft %}
+    {% if mismatches %}
+    <div class="alert alert-warning">
+      <strong>매장 정보와 다른 내용이 있습니다. 발송 전에 확인하세요.</strong>
+      <ul class="mb-0">
+        {% for m in mismatches %}<li>{{ m.kind }} <code>{{ m.found }}</code>: {{ m.message }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <div class="alert alert-success py-2">가격·영업시간이 매장 정보와 일치합니다.</div>
+    {% endif %}
+    <textarea class="form-control" rows="6">{{ inquiry.ai_draft }}</textarea>
+    <p class="text-muted small mt-2 mb-0">AI가 만든 초안입니다. 확인·수정 후 발송하세요. (발송 완료 처리는 13주차 구현 예정)</p>
+  {% else %}
+    <p class="text-muted mb-0">아직 초안이 없습니다. 위 버튼을 눌러 AI 초안을 만드세요.</p>
+  {% endif %}
+</div>
+{% endblock %}

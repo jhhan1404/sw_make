@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "base_owner.html" %}
 {% block title %}예약 #{{ reservation.id }}{% endblock %}
 {% block content %}
 <a href="/owner/reservations?store_id={{ reservation.store_id }}" class="btn btn-link px-0 mb-2">← 예약 목록</a>
@@ -23,7 +23,11 @@
   <div class="d-flex gap-2">
     {% for a in owner_actions %}
     <form method="post" action="/owner/reservations/{{ reservation.id }}/{{ a }}">
-      <button class="btn {{ 'btn-outline-danger' if a in ('cancel', 'no_show') else 'btn-primary' }}">{{ labels[a] }}</button>
+      {% if reservation.status == '취소' and a == 'confirm' %}
+        <button class="btn btn-warning">복원 (요청으로 되돌리기)</button>
+      {% else %}
+        <button class="btn {{ 'btn-outline-danger' if a in ('cancel', 'no_show') else 'btn-primary' }}">{{ labels[a] }}</button>
+      {% endif %}
     </form>
     {% endfor %}
   </div>

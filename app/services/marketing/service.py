@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.adapters.ai import AIClient, AIClientError
 from app.models.models import MarketingContent, MenuItem, Store
 from app.repositories.marketing_repository import (
+    delete_marketing_content,
     list_marketing_contents,
     save_marketing_content,
 )
@@ -112,4 +113,16 @@ class MarketingService:
             session=session,
             store_id=store_id,
             limit=limit,
+        )
+
+    def delete(
+        self,
+        session: Session,
+        content_id: int,
+        store_id: int,
+    ) -> bool:
+        return delete_marketing_content(
+            session=session,
+            content_id=content_id,
+            store_id=store_id,
         )

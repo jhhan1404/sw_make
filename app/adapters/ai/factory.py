@@ -9,6 +9,7 @@ from app.adapters.ai.base import AIClient, AIClientError
 from app.adapters.ai.external_adapter import (
     ClaudeAIClient,
     GeminiAIClient,
+    GroqAIClient,
     HttpAIClient,
     OpenAIClient,
 )
@@ -19,6 +20,7 @@ PROVIDERS: dict[str, type[HttpAIClient]] = {
     "claude": ClaudeAIClient,
     "gemini": GeminiAIClient,
     "openai": OpenAIClient,
+    "groq": GroqAIClient,
 }
 
 

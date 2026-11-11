@@ -182,3 +182,23 @@ class OpenAIClient(HttpAIClient):
 
     def parse(self, data: dict[str, Any]) -> str:
         return data["choices"][0]["message"]["content"]
+
+
+class GroqAIClient(HttpAIClient):
+    """Groq Cloud API (OpenAI-compatible)."""
+
+    provider_name = "Groq"
+
+    def endpoint(self) -> str:
+        return "https://api.groq.com/openai/v1/chat/completions"
+
+    def headers(self) -> dict[str, str]:
+        return {"Authorization": f"Bearer {self.api_key}"}
+
+    def payload(self, prompt: str, system: str | None) -> dict[str, Any]:
+        messages = [{"role": "system", "content": system}] if system else []
+        messages.append({"role": "user", "content": prompt})
+        return {"model": self.model, "messages": messages}
+
+    def parse(self, data: dict[str, Any]) -> str:
+        return data["choices"][0]["message"]["content"]

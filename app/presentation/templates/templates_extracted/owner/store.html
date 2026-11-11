@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}매장 관리{% endblock %}
+{% block content %}
+
+{# F-01 매장·메뉴·FAQ 관리 화면 #}
+<h1 class="h4 mb-4">매장 관리</h1>
+
+<!-- 탭 -->
+<ul class="nav nav-tabs mb-4" id="storeTabs">
+  <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-store">매장 정보</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-menu">메뉴</a></li>
+  <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-faq">FAQ</a></li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- 매장 정보 탭 -->
+  <div class="tab-pane fade show active" id="tab-store">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>매장 기본 정보</span>
+        <button class="btn btn-sm btn-primary" onclick="document.getElementById('store-form').classList.toggle('d-none')">수정</button>
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3">매장명</dt><dd class="col-sm-9">{{ store.name }}</dd>
+          <dt class="col-sm-3">업종</dt><dd class="col-sm-9">{{ store.category }}</dd>
+          <dt class="col-sm-3">주소</dt><dd class="col-sm-9">{{ store.address }}</dd>
+          <dt class="col-sm-3">영업시간</dt><dd class="col-sm-9">{{ store.open_time }} ~ {{ store.close_time }}</dd>
+          <dt class="col-sm-3">휴무일</dt><dd class="col-sm-9">{{ store.closed_days if store.closed_days else '없음' }}</dd>
+          <dt class="col-sm-3">전화번호</dt><dd class="col-sm-9">{{ store.phone }}</dd>
+          <dt class="col-sm-3">시간당 정원</dt><dd class="col-sm-9">{{ store.capacity_per_hour }}명</dd>
+        </dl>
+      </div>
+    </div>
+    <!-- 수정 폼 (토글) -->
+    <div class="card mt-3 d-none" id="store-form">
+      <div class="card-header">매장 정보 수정</div>
+      <div class="card-body">
+        <form method="post" action="/owner/store">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">매장명</label>
+              <input name="name" class="form-control" value="{{ store.name }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">업종</label>
+              <input name="category" class="form-control" value="{{ store.category }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">주소</label>
+              <input name="address" class="form-control" value="{{ store.address }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">영업 시작</label>
+              <input name="open_time" type="time" class="form-control" value="{{ store.open_time }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">영업 종료</label>
+              <input name="close_time" type="time" class="form-control" value="{{ store.close_time }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">휴무일</label>
+              <input name="closed_days" class="form-control" value="{{ store.closed_days }}" placeholder="예: 월,화">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">시간당 정원</label>
+              <input name="capacity_per_hour" type="number" class="form-control" value="{{ store.capacity_per_hour }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">전화번호</label>
+              <input name="phone" class="form-control" value="{{ store.phone }}">
+            </div>
+          </div>
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메뉴 탭 -->
+  <div class="tab-pane fade" id="tab-menu">
+    <div class="card mb-3">
+      <div class="card-header">메뉴 추가</div>
+      <div class="card-body">
+        <form method="post" action="/owner/menus" class="row g-2">
+          <div class="col-md-4">
+            <input name="name" class="form-control" placeholder="메뉴명" required>
+          </div>
+          <div class="col-md-2">
+            <input name="price" type="number" class="form-control" placeholder="가격(원)" min="0" required>
+          </div>
+          <div class="col-md-4">
+            <input name="description" class="form-control" placeholder="설명 (선택)">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">추가</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">메뉴 목록</div>
+      <div class="card-body p-0">
+        {% if not menus %}
+        <p class="text-muted p-3 mb-0">등록된 메뉴가 없습니다.</p>
+        {% else %}
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light"><tr><th>메뉴명</th><th>가격</th><th>설명</th><th>판매</th><th></th></tr></thead>
+          <tbody>
+          {% for m in menus %}
+          <tr>
+            <td>{{ m.name }}</td>
+            <td>{{ "{:,}".format(m.price) }}원</td>
+            <td class="text-muted small">{{ m.description }}</td>
+            <td><span class="badge {{ 'text-bg-success' if m.on_sale else 'text-bg-secondary' }}">{{ '판매중' if m.on_sale else '중단' }}</span></td>
+            <td>
+              <form method="post" action="/owner/menus/{{ m.id }}/delete" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ 탭 -->
+  <div class="tab-pane fade" id="tab-faq">
+    <div class="card mb-3">
+      <div class="card-header">FAQ 추가</div>
+      <div class="card-body">
+        <form method="post" action="/owner/faqs" class="row g-2">
+          <div class="col-md-5">
+            <input name="question" class="form-control" placeholder="질문" required>
+          </div>
+          <div class="col-md-5">
+            <input name="answer" class="form-control" placeholder="답변" required>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">추가</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">FAQ 목록</div>
+      <div class="card-body p-0">
+        {% if not faqs %}
+        <p class="text-muted p-3 mb-0">등록된 FAQ가 없습니다.</p>
+        {% else %}
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light"><tr><th>질문</th><th>답변</th><th></th></tr></thead>
+          <tbody>
+          {% for f in faqs %}
+          <tr>
+            <td>{{ f.question }}</td>
+            <td class="text-muted">{{ f.answer }}</td>
+            <td>
+              <form method="post" action="/owner/faqs/{{ f.id }}/delete" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
