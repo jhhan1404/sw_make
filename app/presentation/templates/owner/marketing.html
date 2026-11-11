@@ -1,0 +1,188 @@
+{% extends "base_owner.html" %}
+{% block title %}홍보 문구 생성{% endblock %}
+{% block content %}
+<h1 class="h4 mb-4">홍보 문구 생성</h1>
+
+<div class="row g-4">
+  <!-- 생성 폼 -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">문구 생성</div>
+      <div class="card-body">
+        <form method="post" action="/owner/marketing/generate">
+          <div class="mb-3">
+            <label class="form-label">채널</label>
+            <select name="channel" class="form-select" required>
+              {% for ch in channels %}
+              <option value="{{ ch }}" {% if form.channel == ch %}selected{% endif %}>
+                {{ channel_labels[ch] }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">홍보 대상</label>
+            {% set targets = [
+              '20대 직장인', '30~40대 직장인', '대학생', '주부',
+              '연인·커플', '가족 단위 고객', '중장년층(50대 이상)',
+              '외국인 관광객', '단체·모임 고객'
+            ] %}
+            <div class="d-flex flex-wrap gap-2 p-2 border rounded bg-white">
+              {% for t in targets %}
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="radio" name="target" value="{{ t }}"
+                  id="tgt_{{ loop.index }}" {% if form.target == t or (not form.target and loop.first) %}checked{% endif %} required>
+                <label class="form-check-label" for="tgt_{{ loop.index }}">{{ t }}</label>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">키워드 <small class="text-muted">(복수 선택 가능)</small></label>
+            {% set all_keywords = [
+              '신메뉴 출시', '할인·이벤트', '주말 특가', '점심 특선',
+              '테이크아웃', '단체 예약', '분위기 맛집', '가성비',
+              '프리미엄', '계절 한정 메뉴', '웨이팅 없음', '주차 가능'
+            ] %}
+            {% set selected_kws = form.keywords_raw.split(',') | map('trim') | list if form.keywords_raw else [] %}
+            <div class="d-flex flex-wrap gap-2 p-2 border rounded bg-white">
+              {% for kw in all_keywords %}
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="kw_check" value="{{ kw }}"
+                  id="kw_{{ loop.index }}" {% if kw in selected_kws %}checked{% endif %}>
+                <label class="form-check-label" for="kw_{{ loop.index }}">{{ kw }}</label>
+              </div>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="keywords_raw" id="keywords_hidden" value="{{ form.keywords_raw or '' }}">
+          </div>
+          <button class="btn btn-primary w-100">✨ 문구 생성</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 생성 결과 -->
+    {% if result %}
+    <div class="card mt-3 {% if result.error %}border-danger{% elif result.violations %}border-warning{% else %}border-success{% endif %}">
+      <div class="card-header {% if result.error %}text-bg-danger{% elif result.violations %}text-bg-warning{% else %}text-bg-success{% endif %}">
+        {% if result.error %}
+          오류
+        {% elif result.violations %}
+          생성 완료 (규칙 위반 있음)
+        {% else %}
+          생성 완료 ✓
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if result.error %}
+          <p class="mb-0 text-danger">{{ result.error }}</p>
+        {% else %}
+          <p class="mb-2" style="white-space: pre-wrap;">{{ result.text }}</p>
+          {% if result.violations %}
+          <hr>
+          <p class="mb-1 fw-bold text-warning-emphasis small">⚠ 규칙 위반</p>
+          <ul class="mb-0 small text-warning-emphasis">
+            {% for v in result.violations %}<li>{{ v }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 생성 이력 -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">생성 이력</div>
+      {% if not contents %}
+      <div class="card-body text-muted">아직 생성된 문구가 없습니다.</div>
+      {% else %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr><th>채널</th><th>대상</th><th>문구</th><th>일시</th><th></th></tr>
+          </thead>
+          <tbody>
+          {% for c in contents %}
+          <tr style="cursor:pointer;"
+              data-id="{{ c.id }}"
+              data-channel="{{ channel_labels.get(c.channel, c.channel) }}"
+              data-target="{{ c.target }}"
+              data-keywords="{{ c.keywords }}"
+              data-text="{{ c.text | e }}"
+              data-date="{{ c.saved_at.strftime('%Y-%m-%d %H:%M') }}"
+              onclick="openDetail(this)">
+            <td class="text-nowrap">{{ channel_labels.get(c.channel, c.channel) }}</td>
+            <td class="text-nowrap">{{ c.target }}</td>
+            <td>
+              <span style="display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                {{ c.text }}
+              </span>
+            </td>
+            <td class="text-nowrap text-muted">{{ c.saved_at.strftime('%m/%d %H:%M') }}</td>
+            <td onclick="event.stopPropagation()">
+              <form method="post" action="/owner/marketing/{{ c.id }}/delete"
+                    onsubmit="return confirm('삭제하시겠습니까?')">
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">삭제</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- 상세 모달 -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">홍보 문구 상세</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2 small text-muted">
+          <span id="d-channel" class="badge text-bg-secondary me-1"></span>
+          <span id="d-target" class="fw-semibold"></span>
+          <span class="ms-2 text-muted" id="d-date"></span>
+        </div>
+        <div id="d-keywords" class="mb-3 small text-muted"></div>
+        <div class="p-3 bg-light rounded" style="white-space:pre-wrap;line-height:1.7;" id="d-text"></div>
+        <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyText()">📋 복사</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // 체크박스 선택값 → hidden input으로 취합
+  document.querySelector('form').addEventListener('submit', function () {
+    const checked = [...document.querySelectorAll('input[name="kw_check"]:checked')]
+      .map(el => el.value);
+    document.getElementById('keywords_hidden').value = checked.join(', ');
+  });
+
+  function openDetail(row) {
+    document.getElementById('d-channel').textContent = row.dataset.channel;
+    document.getElementById('d-target').textContent = row.dataset.target;
+    document.getElementById('d-date').textContent = row.dataset.date;
+    document.getElementById('d-text').textContent = row.dataset.text;
+    const kw = row.dataset.keywords;
+    document.getElementById('d-keywords').textContent = kw ? '키워드: ' + kw : '';
+    new bootstrap.Modal(document.getElementById('detailModal')).show();
+  }
+
+  function copyText() {
+    const text = document.getElementById('d-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      btn.textContent = '✅ 복사됨';
+      setTimeout(() => btn.textContent = '📋 복사', 1500);
+    });
+  }
+</script>
+{% endblock %}

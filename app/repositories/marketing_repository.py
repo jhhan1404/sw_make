@@ -37,6 +37,23 @@ def save_marketing_content(
         raise
 
 
+def delete_marketing_content(
+    session: Session,
+    content_id: int,
+    store_id: int,
+) -> bool:
+    content = session.get(MarketingContent, content_id)
+    if content is None or content.store_id != store_id:
+        return False
+    try:
+        session.delete(content)
+        session.commit()
+        return True
+    except Exception:
+        session.rollback()
+        raise
+
+
 def list_marketing_contents(
     session: Session,
     store_id: int,
