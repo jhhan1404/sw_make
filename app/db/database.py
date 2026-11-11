@@ -15,18 +15,25 @@ class Base(DeclarativeBase):
     """모든 모델의 부모 클래스."""
 
 
-def init_db() -> None:
-    """모델 정의를 바탕으로 테이블을 만들고, 기본 매장 데이터를 넣는다."""
-    from datetime import time
-
+def create_tables() -> None:
+    """모델 정의를 바탕으로 테이블만 만든다. 가상 데이터 적재(seed)는 이것만 쓴다."""
     from app.models import models  # noqa: F401  (모델 등록용 import)
 
     Base.metadata.create_all(bind=engine)
 
+
+def init_db() -> None:
+    """테이블을 만들고, 매장이 하나도 없으면 기본 매장 데이터를 넣는다."""
+    from datetime import time
+
+    from app.models import models
+
+    create_tables()
+
     # 배포 직후 store_id=1 이 없으면 매장·메뉴·FAQ 관리 화면이 동작하지 않는다.
-    # 아직 없을 때만 기본값으로 만든다 (재시작 때 덮어쓰지 않음).
+    # 매장이 하나도 없을 때만 만든다. seed 데이터가 있으면 그대로 둔다.
     with SessionLocal() as session:
-        if session.get(models.Store, 1) is None:
+        if session.query(models.Store).count() == 0:
             store = models.Store(
                 id=1,
                 name="브루밍 카페",
